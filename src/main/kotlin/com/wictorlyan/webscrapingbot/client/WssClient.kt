@@ -3,11 +3,13 @@ package com.wictorlyan.webscrapingbot.client
 import com.google.gson.Gson
 import com.wictorlyan.webscrapingbot.dto.AfishaMovieDTO
 import com.wictorlyan.webscrapingbot.dto.AfishaMovieScheduleDTO
+import com.wictorlyan.webscrapingbot.dto.AfishaNewsDTO
+import com.wictorlyan.webscrapingbot.dto.CoronavirusStatsDTO
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
-class AfishaClient {
-    private val BASE_URL = "http://localhost:9096"
+class WssClient {
+    private val BASE_URL = "http://${System.getenv("WSS_HOST") ?: "localhost:9096"}"
     private val client = OkHttpClient()
     private val gson = Gson()
     
@@ -31,5 +33,23 @@ class AfishaClient {
         } else {
             gson.fromJson(response.body()?.string(), AfishaMovieDTO::class.java)
         }
+    }
+
+    fun queryCurrentCoronavirusNews(): AfishaNewsDTO {
+        val request = Request.Builder()
+            .url("$BASE_URL/afisha-news/latest")
+            .build()
+
+        val response = client.newCall(request).execute()
+        return gson.fromJson(response.body()?.string(), AfishaNewsDTO::class.java)
+    }
+    
+    fun queryCurrentCoronavirusStatsForCountry(country: String): CoronavirusStatsDTO {
+        val request = Request.Builder()
+            .url("$BASE_URL/coronavirus/country-data/$country")
+            .build()
+
+        val response = client.newCall(request).execute()
+        return gson.fromJson(response.body()?.string(), CoronavirusStatsDTO::class.java)
     }
 }

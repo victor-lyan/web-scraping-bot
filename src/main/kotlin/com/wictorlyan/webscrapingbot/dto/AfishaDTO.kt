@@ -50,3 +50,12 @@ data class AfishaMovieDTO(
 data class AfishaMovieSmallDTO(val id: Int, val name: String, val genre: String)
 
 data class AfishaMovieScheduleDTO(val result: List<AfishaMovieSmallDTO>)
+
+data class AfishaNewsArticleDTO(
+    val title: String,
+    val link: String,
+    val date: String,
+    val description: String
+)
+
+data class AfishaNewsDTO(val result: List<AfishaNewsArticleDTO> = emptyList())

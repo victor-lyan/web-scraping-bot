@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter
 
 fun generateMainMenu(): List<List<KeyboardButton>> {
     return listOf(
+        listOf(KeyboardButton(BUTTON_CORONAVIRUS.addEmojiBefore("mask"))),
         listOf(KeyboardButton(BUTTON_TODAY_MOVIES.addEmojiBefore("movie_camera")))
     )
 }

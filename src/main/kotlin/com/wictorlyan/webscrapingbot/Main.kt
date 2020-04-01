@@ -1,6 +1,6 @@
 package com.wictorlyan.webscrapingbot
 
-import com.wictorlyan.webscrapingbot.client.AfishaClient
+import com.wictorlyan.webscrapingbot.client.WssClient
 import com.wictorlyan.webscrapingbot.handler.StateHandler
 import com.wictorlyan.webscrapingbot.handler.TextHandler
 import com.wictorlyan.webscrapingbot.message.generateMainMenu
@@ -13,22 +13,10 @@ import me.ivmg.telegram.extensions.filters.Filter
 import okhttp3.logging.HttpLoggingInterceptor
 import redis.clients.jedis.Jedis
 
-const val MESSAGE_START = "Приступим к работе!"
-const val MESSAGE_CINEMAS = "Кинотеатры"
-const val MESSAGE_DATE = "Дата"
-const val MESSAGE_TIME = "Время"
-const val MESSAGE_MOVIE_NOT_FOUND = "Фильм не найден"
-const val MESSAGE_LINK = "Ссылка"
-const val MESSAGE_LINK_TO_AFISHA = "Ссылка на афишу"
-const val MESSAGE_TODAY_MOVIES_SCHEDULE = "Расписание кино на сегодня:"
-const val MESSAGE_BACK = "Назад"
-const val BUTTON_TODAY_MOVIES = "Показать афишу кино на сегодня"
-const val MESSAGE_UNKNOWN_INPUT = "Неизвестная команда!"
-
 fun main(args: Array<String>) {
     val jedis = Jedis(System.getenv("REDIS_HOST") ?: "localhost")
     val stateHandler = StateHandler(jedis)
-    val wssClient = AfishaClient()
+    val wssClient = WssClient()
     val bot = bot {
         // we pass token as a first parameter for main function
         token = if (args.isNotEmpty()) args[0] else ""
@@ -54,6 +42,7 @@ fun main(args: Array<String>) {
 
                 when (stateHandler.getCurrentState(chatId)) {
                     State.START -> textHandler.startMessages()
+                    State.CORONAVIRUS -> textHandler.coronavirusMessages()
                     State.SHOW_MOVIES -> textHandler.showMoviesMessages()
                     State.MOVIE_DETAILS -> textHandler.movieDetailsMessages()
                 }
