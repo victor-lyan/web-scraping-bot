@@ -4,8 +4,10 @@ import com.wictorlyan.webscrapingbot.*
 import com.wictorlyan.webscrapingbot.client.WssClient
 import com.wictorlyan.webscrapingbot.helper.addEmojiBefore
 import com.wictorlyan.webscrapingbot.helper.parseEmojis
+import com.wictorlyan.webscrapingbot.helper.sendMessageWithStateHandler
 import com.wictorlyan.webscrapingbot.message.*
 import me.ivmg.telegram.Bot
+import me.ivmg.telegram.entities.InlineKeyboardMarkup
 import me.ivmg.telegram.entities.KeyboardReplyMarkup
 import me.ivmg.telegram.entities.ParseMode
 
@@ -14,7 +16,7 @@ class TextHandler(
     private val stateHandler: StateHandler,
     private val bot: Bot,
     private val messageText: String,
-    private val chatId: Long    
+    private val chatId: Long
 ) {
     fun startMessages() {
         when (messageText) {
@@ -94,9 +96,9 @@ class TextHandler(
     fun movieDetailsMessages() {
         TODO("Not yet implemented")
     }
-    
+
     private fun unknownMessage(chatId: Long) {
-        bot.sendMessage(chatId = chatId, text= MESSAGE_UNKNOWN_INPUT)
+        bot.sendMessage(chatId = chatId, text = MESSAGE_UNKNOWN_INPUT)
     }
 
     fun coronavirusMessages() {
@@ -114,12 +116,12 @@ class TextHandler(
                 }
             }
             BUTTON_CURRENT_DATA.addEmojiBefore("bar_chart") -> {
-                val currentStats = wssClient
-                    .queryCurrentCoronavirusStatsForCountry(COUNTRY_UZBEKISTAN)
-                bot.sendMessage(
-                    chatId,
-                    text = getCoronavirusStatsMessage(currentStats),
-                    parseMode = ParseMode.HTML
+                bot.sendMessageWithStateHandler(
+                    chatId = chatId,
+                    text = MESSAGE_CHOOSE_COUNTRY,
+                    replyMarkup = InlineKeyboardMarkup(getCoronavirusCountriesMessage()),
+                    stateHandler = stateHandler,
+                    doReplace = false
                 )
             }
             MESSAGE_BACK.addEmojiBefore("arrow_left") -> {
@@ -129,5 +131,15 @@ class TextHandler(
             }
             else -> unknownMessage(chatId)
         }
+    }
+
+    fun coronavirusCountryDetails() {
+        val currentStats = wssClient.queryCurrentCoronavirusStatsForCountry(messageText)
+        bot.sendMessageWithStateHandler(
+            chatId,
+            text = getCoronavirusStatsMessage(currentStats),
+            parseMode = ParseMode.HTML,
+            stateHandler = stateHandler
+        )
     }
 }

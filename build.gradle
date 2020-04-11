@@ -55,8 +55,7 @@ def dockerBuildDir = 'build/docker/'
 task createDockerfile(type: Dockerfile) {
     from 'openjdk:8-jre-alpine'
     copyFile jar.archiveFileName.get(), '/app/web-scraping-bot.jar'
-    entryPoint 'java'
-    defaultCommand '-jar', '/app/web-scraping-bot.jar', '$TELEGRAM_TOKEN', '$REDIS_HOST'
+    entryPoint 'sh', '-c', 'java -jar /app/web-scraping-bot.jar $TELEGRAM_TOKEN'
     exposePort 8080
 }
 
@@ -67,7 +66,8 @@ task syncJar(type: Copy) {
 }
 
 task removeOldImage(type: DockerRemoveImage) {
-    targetImageId('wictor-lyan/web-scraping-bot')
+    force.set(true)
+    targetImageId('wictorlyan/web-scraping-bot')
     onError {exception ->
         println exception.message
     }
@@ -75,5 +75,12 @@ task removeOldImage(type: DockerRemoveImage) {
 
 task buildDockerImage(type: DockerBuildImage) {
     dependsOn removeOldImage, syncJar, createDockerfile
-    images.add('wictor-lyan/web-scraping-bot:latest')
+    images.add('wictorlyan/web-scraping-bot:latest')
+}
+
+task pushDockerImage(type: DockerPushImage) {
+    dependsOn buildDockerImage
+    images.add('wictorlyan/web-scraping-bot:latest')
+    registryCredentials.username.set(dockerHubUser)
+    registryCredentials.password.set(dockerHubPassword)
 }

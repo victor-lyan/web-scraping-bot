@@ -6,6 +6,7 @@ import com.wictorlyan.webscrapingbot.handler.TextHandler
 import com.wictorlyan.webscrapingbot.message.generateMainMenu
 import me.ivmg.telegram.bot
 import me.ivmg.telegram.dispatch
+import me.ivmg.telegram.dispatcher.callbackQuery
 import me.ivmg.telegram.dispatcher.command
 import me.ivmg.telegram.dispatcher.message
 import me.ivmg.telegram.entities.KeyboardReplyMarkup
@@ -45,7 +46,28 @@ fun main(args: Array<String>) {
                     State.CORONAVIRUS -> textHandler.coronavirusMessages()
                     State.SHOW_MOVIES -> textHandler.showMoviesMessages()
                     State.MOVIE_DETAILS -> textHandler.movieDetailsMessages()
+                    State.NOT_FOUND -> {
+                        // when state is not found, we give the user the start message
+                        val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateMainMenu(), resizeKeyboard = true)
+                        bot.sendMessage(chatId = chatId, text = MESSAGE_START, replyMarkup = keyboardMarkup)
+                        stateHandler.saveState(chatId, State.START)
+                    }
                 }
+            }
+            
+            callbackQuery(KEY_CORONA_COUNTRY) {bot, update ->
+                update.callbackQuery?.let {
+                    val chatId = it.message!!.chat.id
+                    val textHandler = TextHandler(
+                        wssClient, 
+                        stateHandler, 
+                        bot, 
+                        it.data.substringAfter(KEY_CORONA_COUNTRY), 
+                        chatId
+                    )
+                    textHandler.coronavirusCountryDetails()
+                }
+                
             }
         }
     }

@@ -4,7 +4,9 @@ import com.wictorlyan.webscrapingbot.*
 import com.wictorlyan.webscrapingbot.dto.AfishaNewsDTO
 import com.wictorlyan.webscrapingbot.dto.CoronavirusStatsDTO
 import com.wictorlyan.webscrapingbot.helper.addEmojiBefore
+import com.wictorlyan.webscrapingbot.helper.parseEmojis
 import com.wictorlyan.webscrapingbot.helper.translateMonthAndDay
+import me.ivmg.telegram.entities.InlineKeyboardButton
 import me.ivmg.telegram.entities.KeyboardButton
 
 fun getCoronavirusMenuItems(): List<List<KeyboardButton>> {
@@ -33,6 +35,17 @@ fun getCoronavirusNewsMessages(news: AfishaNewsDTO): List<String> {
     return result
 }
 
+fun getCoronavirusCountriesMessage(): List<List<InlineKeyboardButton>> {
+    val result = mutableListOf<List<InlineKeyboardButton>>()
+    for ((country, flag) in FLAGS_MAP) {
+        result.add(listOf(InlineKeyboardButton(
+            text = COUNTRIES_MAP[country]?.addEmojiBefore(flag) ?: "", 
+            callbackData = "${KEY_CORONA_COUNTRY}$country"
+        )))
+    }
+    return result
+}
+
 fun getCoronavirusStatsMessage(stats: CoronavirusStatsDTO): String {
     var result = "$MESSAGE_COUNTRY: <strong>${COUNTRIES_MAP[stats.country.toLowerCase()]}</strong>\n"
     result += "$MESSAGE_TOTAL_CASES: <strong>${stats.totalCases}</strong>\n"
@@ -44,7 +57,7 @@ fun getCoronavirusStatsMessage(stats: CoronavirusStatsDTO): String {
     result += "$MESSAGE_SERIOUS_CASES: <strong>${stats.seriousCases}</strong>\n"
     result += "$MESSAGE_TOTAL_CASES_BY_MILLION: <strong>${stats.totalCasesByMillion}</strong>\n"
     result += "$MESSAGE_DEATHS_BY_MILLION: <strong>${stats.deathsByMillion}</strong>\n"
-    result += "$MESSAGE_FIRST_CASE_DATE: <strong>${stats.firstCaseDate.translateMonthAndDay()}</strong>\n"
-    
+    result += "$MESSAGE_FIRST_CASE_DATE: <strong>${stats.firstCaseDate?.translateMonthAndDay() ?: MESSAGE_UNKNOWN}</strong>\n"
+
     return result
 }
